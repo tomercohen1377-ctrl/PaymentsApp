@@ -23,7 +23,8 @@ class controller  {
         }
     }
     deleteTransaction = async (req, res) => {
-        const { billingId } = req.body
+        // Accept the id as a number or a numeric string, like getTransactionDetails does.
+        const billingId = Number(req.body.billingId)
         try {
             const list = JSON.parse(await fs.readFile('./list.json'))
             const details = JSON.parse(await fs.readFile('./details.json'))
@@ -35,8 +36,10 @@ class controller  {
             if (indexToDeleteDetails === -1) {
                 return res.send({ status: -1 })
             }
-            list.splice(indexToDeleteList)
-            details.splice(indexToDeleteDetails)
+            // splice(start) without a deleteCount removes everything from start to the end of the
+            // array; remove only the requested entry.
+            list.splice(indexToDeleteList, 1)
+            details.splice(indexToDeleteDetails, 1)
             await fs.writeFile("./list.json",JSON.stringify(list))
             await fs.writeFile("./details.json",JSON.stringify(details))
             return res.send({ status: 0 })
