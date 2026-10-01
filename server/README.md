@@ -10,8 +10,19 @@ npm install
 npm run dev        # Express app running on port 8030!
 ```
 
-From the Android emulator the server is reachable at `http://10.0.2.2:8030/`. For a physical device,
-run `adb reverse tcp:8030 tcp:8030` and use `http://localhost:8030/`.
+From the Android emulator the server is reachable at `http://10.0.2.2:8030/` (the app's default).
+
+If the app shows "No internet connection" although the server runs, the macOS firewall is probably
+dropping incoming connections to `node` (common with stealth mode). Either allow `node` in
+System Settings → Network → Firewall, or tunnel through adb, which needs no firewall change and also
+works for a physical device:
+
+```bash
+adb reverse tcp:8030 tcp:8030
+./gradlew installDebug -Ppayments.baseUrl=http://localhost:8030/
+```
+
+(or put `payments.baseUrl=http://localhost:8030/` in `local.properties`).
 
 ## Endpoints (all `POST`, JSON body)
 

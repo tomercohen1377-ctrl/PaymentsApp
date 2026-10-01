@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="billing_list_empty">No billing entries</string>
+    <string name="upload">Upload</string>
+    <string name="upload_not_available">Upload is not available yet</string>
+    <string name="open_details">Open details</string>
+    <!-- Billing number and date of a row, e.g. "3/6 · 21-08-2022 19:02" -->
+    <string name="billing_number_and_date" translatable="false">%1$s · %2$s</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="billing_list_empty">אין חיובים להצגה</string>
+    <string name="upload">העלאה</string>
+    <string name="upload_not_available">העלאה עדיין לא זמינה</string>
+    <string name="open_details">לפרטים</string>
+</resources>
