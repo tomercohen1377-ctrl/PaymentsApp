@@ -36,12 +36,12 @@ object PreviewBillingData {
 
     val passedDetails = BillingEntryDetails(
         id = 1,
-        price = Money.of("14.40", "ILS"),
+        price = Money.of("28.80", "ILS"),
         created = created,
         entryNumber = 3,
         totalEntryCount = 6,
-        amountPaid = Money.of("28.80", "ILS"),
-        remainingAmount = Money.of("28.80", "ILS"),
+        amountPaid = Money.of("14.40", "ILS"),
+        remainingAmount = Money.of("14.40", "ILS"),
         status = BillingStatus.PASSED,
         cardNumber = "4580123456782345",
         cardType = CardType.VISA,

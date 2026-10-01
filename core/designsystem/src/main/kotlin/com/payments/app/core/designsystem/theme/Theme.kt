@@ -17,6 +17,7 @@ private val LightColors = lightColorScheme(
     background = Color.White,
     surface = Color.White,
     surfaceContainer = Color.White,
+    surfaceContainerHigh = Color.White, // dialogs
     onSurfaceVariant = PaymentsColors.Gray,
     outlineVariant = PaymentsColors.GrayLight,
 )
