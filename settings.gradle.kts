@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google {
             content {
@@ -23,3 +24,15 @@ dependencyResolutionManagement {
 rootProject.name = "PaymentsApp"
 
 include(":app")
+
+include(":core:common")
+include(":core:data")
+include(":core:designsystem")
+include(":core:domain")
+include(":core:model")
+include(":core:network")
+include(":core:testing")
+include(":core:ui")
+
+include(":feature:billingdetails")
+include(":feature:billinglist")

@@ -1,14 +1,15 @@
-// Top-level build file. Plugins are declared here (not applied) so their versions resolve once;
-// the :app module applies them via the version catalog.
+// Top-level build file. Every plugin is declared here (not applied) so its version resolves once
+// and the build-logic convention plugins can apply it by id.
 plugins {
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
     // AGP 9 has built-in Kotlin support; declaring KGP here pins the Kotlin compiler version it uses.
     alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.hilt) apply false
-    alias(libs.plugins.room) apply false
     alias(libs.plugins.spotless)
 }
 
@@ -28,15 +29,15 @@ val ktlintRules = mapOf(
 
 spotless {
     kotlin {
-        target("**/src/**/*.kt")
-        targetExclude("**/build/**", "server/**")
+        // Fixed-depth patterns (:app, :core:x / :feature:x, build-logic) so Spotless only walks src/
+        // folders and never build/ output that a parallel `clean` may be deleting.
+        target("*/src/**/*.kt", "*/*/src/**/*.kt")
         ktlint(libs.versions.ktlint.get())
             .customRuleSets(listOf(libs.compose.rules.ktlint.get().toString()))
             .editorConfigOverride(ktlintRules)
     }
     kotlinGradle {
-        target("**/*.gradle.kts")
-        targetExclude("**/build/**", "server/**")
+        target("*.gradle.kts", "*/*.gradle.kts", "*/*/*.gradle.kts")
         ktlint(libs.versions.ktlint.get())
             .editorConfigOverride(ktlintRules)
     }
