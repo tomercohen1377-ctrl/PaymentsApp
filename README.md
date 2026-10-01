@@ -34,11 +34,17 @@ Screenshots from the phone:
 
 ## Running it
 
-**1. The server** (Node; see [`server/README.md`](server/README.md)):
+**1. The server** (Node, Express):
 
 ```bash
 cd server && npm install && npm run dev      # http://localhost:8030
 ```
+
+| Endpoint (all `POST`, JSON body) | Body | Response |
+|---|---|---|
+| `/payment/billing/entry/headers` | `{}` | `{ "headers": [BillingEntryHeader] }` |
+| `/payment/billing/entry/details` | `{ "billingId": 5200 }` | `{ "details": BillingEntryDetails }`, or `{ "details": null }` for an unknown id |
+| `/payment/billing/entry/delete` | `{ "billingId": 5200 }` | `{ "status": 0 }` on success, `{ "status": -1 }` if the id doesn't exist |
 
 **2. The app**: open the project in Android Studio and run `app`, or:
 
@@ -60,8 +66,6 @@ Deletes are written to the server's JSON files. Restore the data with
 `git checkout server/list.json server/details.json`.
 
 ## What the task asks, and where it is
-
-Full line-by-line tables: [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md).
 
 | Requirement | Implementation |
 |---|---|
@@ -188,7 +192,8 @@ npx newman run docs/api/PaymentsApp.postman_collection.json
 
 ## Next steps with more time
 
-- Ask the examiner about the open questions in [the plan](docs/IMPLEMENTATION_PLAN.md#3-open-questions-for-the-examiner-ask-early-defaults-chosen-so-work-isnt-blocked).
+- Confirm the open points with the examiner: where customer name and payment type should come
+  from, `val` vs `totalEntryCount`, the Manual source color, and what the upload button should do.
 - A Room cache for offline use, and paging if the list grows.
 - Screenshot tests for the previews.
 - A real upload action for MasterCard entries.
