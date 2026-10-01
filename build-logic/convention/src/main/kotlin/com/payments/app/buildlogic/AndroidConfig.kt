@@ -19,6 +19,11 @@ internal fun Project.configureAndroid(extension: CommonExtension) {
         defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         compileOptions.sourceCompatibility = JavaVersion.VERSION_17
         compileOptions.targetCompatibility = JavaVersion.VERSION_17
+        // java.time (Instant, ZoneId, DateTimeFormatter) below API 26.
+        compileOptions.isCoreLibraryDesugaringEnabled = true
+    }
+    dependencies {
+        add("coreLibraryDesugaring", libs.library("desugar-jdk-libs"))
     }
     configureUnitTests()
 }

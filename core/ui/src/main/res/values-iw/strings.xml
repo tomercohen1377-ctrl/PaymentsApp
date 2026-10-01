@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_network">אין חיבור לאינטרנט. יש לבדוק את החיבור ולנסות שוב.</string>
+    <string name="error_server">השרת אינו זמין כרגע. יש לנסות שוב מאוחר יותר.</string>
+    <string name="error_invalid_response">התקבלה תשובה לא צפויה. יש לנסות שוב.</string>
+    <string name="error_unknown">משהו השתבש. יש לנסות שוב.</string>
+</resources>
