@@ -129,12 +129,45 @@ class BillingListViewModelTest {
     }
 
     @Test
-    fun `a delete elsewhere removes the entry from the list`() = runTest {
-        repository.serverHeaders = listOf(TestData.header(id = 1), TestData.header(id = 2))
+    fun `a deleted entry stays visible as pending until the screen has shown it`() = runTest {
+        repository.serverHeaders = listOf(TestData.header(id = 1), TestData.header(id = 2), TestData.header(id = 3))
         val vm = viewModel()
 
-        repository.delete(1)
+        repository.delete(2)
 
-        assertThat(vm.state.value).isEqualTo(BillingListUiState.Success(listOf(TestData.header(id = 2))))
+        // Still in place (so the list can animate it out), and marked as leaving.
+        assertThat(vm.state.value).isEqualTo(
+            BillingListUiState.Success(
+                items = listOf(TestData.header(id = 1), TestData.header(id = 2), TestData.header(id = 3)),
+                pendingRemovalIds = setOf(2L),
+            ),
+        )
+
+        vm.onEvent(BillingListEvent.RemovalsShown)
+
+        assertThat(vm.state.value).isEqualTo(
+            BillingListUiState.Success(listOf(TestData.header(id = 1), TestData.header(id = 3))),
+        )
+    }
+
+    @Test
+    fun `entries removed by a refresh are animated out too`() = runTest {
+        repository.serverHeaders = listOf(TestData.header(id = 1), TestData.header(id = 2))
+        val vm = viewModel()
+        repository.serverHeaders = listOf(TestData.header(id = 2))
+
+        vm.onEvent(BillingListEvent.Refresh)
+
+        assertThat((vm.state.value as BillingListUiState.Success).pendingRemovalIds).containsExactly(1L)
+        assertThat((vm.state.value as BillingListUiState.Success).items.map { it.id }).containsExactly(1L, 2L).inOrder()
+    }
+
+    @Test
+    fun `the first load never animates anything out`() = runTest {
+        repository.serverHeaders = listOf(TestData.header(id = 1))
+
+        val vm = viewModel()
+
+        assertThat((vm.state.value as BillingListUiState.Success).pendingRemovalIds).isEmpty()
     }
 }

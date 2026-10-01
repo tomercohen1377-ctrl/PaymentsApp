@@ -34,6 +34,14 @@ class MoneyFormattingTest {
     }
 
     @Test
+    fun `the symbol is the plain one in every region`() {
+        // Java's en-GB and en-IL write "US$28.80".
+        assertThat(formatMoney(Money.of("28.80", "USD"), Locale.UK)).isEqualTo("$28.80")
+        assertThat(formatMoney(Money.of("28.80", "USD"), Locale.forLanguageTag("en-IL"))).isEqualTo("$28.80")
+        assertThat(formatMoney(Money.of("28.80", "ILS"), Locale.UK)).isEqualTo("₪28.80")
+    }
+
+    @Test
     fun `money in Hebrew puts the symbol after the amount`() {
         val formatted = formatMoney(Money.of("14.40", "ILS"), Locale.forLanguageTag("he-IL"))
 

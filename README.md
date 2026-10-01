@@ -89,8 +89,10 @@ Full line-by-line tables: [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PL
   list of `@Serializable` keys, and each screen's ViewModel is scoped to its entry. The billing id
   reaches the details ViewModel through a Hilt assisted factory.
 - **One source of truth.** The repository keeps the loaded list in memory. A delete on the details
-  screen removes the entry from it, so the list updates without fetching again.
-- **Previews.** Every screen and component has previews in light, dark and Hebrew RTL
+  screen removes the entry from it, so the list updates without fetching again. Back on the list, the
+  deleted row is shown for a moment and then animates out (`animateItem()`), so the user sees what
+  was removed.
+- **Previews.** One composable per file, each with previews in light, dark and Hebrew RTL
   (`@PreviewThemes`), one per state.
 
 ## Decisions and where the PDF and the server disagree
@@ -105,6 +107,8 @@ Full line-by-line tables: [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PL
   once in the data mapper.
 - **Customer name and payment type are not in the API.** They show `—` and are picked up
   automatically if the server adds them.
+- **Currency symbols are the plain ones** (`$`, `₪`): the device's locale decides placement and
+  separators, but an English (UK) phone shows `$28.80`, not Java's `US$28.80`.
 - **Card type "Meastro"** is the server's (and the PDF's) spelling of Maestro; unknown values never
   crash parsing.
 - **Icons vs. file names.** Matching the mockup's colors, Terminal is `ic_pos` (a phone) and Pos is

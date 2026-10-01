@@ -1,6 +1,7 @@
 package com.payments.app.core.ui.format
 
 import com.payments.app.core.model.Money
+import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -11,9 +12,21 @@ import java.util.Locale
 fun formatAmount(money: Money, locale: Locale = Locale.getDefault()): String =
     NumberFormat.getNumberInstance(locale).withFractionDigitsOf(money).format(money.amount)
 
-/** Like [formatAmount], with the currency symbol placed per [locale]: `₪14.40`, `$25,357.53`. */
+/**
+ * Like [formatAmount], with the currency symbol: `₪14.40`, `$25,357.53`. The [locale] decides where
+ * the symbol goes and the separators; the symbol itself is always the plain one, so an English (UK)
+ * device shows `$28.80`, not `US$28.80`.
+ */
 fun formatMoney(money: Money, locale: Locale = Locale.getDefault()): String =
-    NumberFormat.getCurrencyInstance(locale).apply { currency = money.currency }
+    NumberFormat.getCurrencyInstance(locale)
+        .apply {
+            currency = money.currency
+            (this as? DecimalFormat)?.let { format ->
+                format.decimalFormatSymbols = format.decimalFormatSymbols.apply {
+                    currencySymbol = money.currency.getSymbol(Locale.US)
+                }
+            }
+        }
         .withFractionDigitsOf(money)
         .format(money.amount)
 

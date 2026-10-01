@@ -36,7 +36,7 @@ import com.payments.app.feature.billingdetails.R
  * (3) date time, (4) billing number, (5) customer name.
  */
 @Composable
-fun BillingDetailsHeader(
+internal fun BillingDetailsHeader(
     details: BillingEntryDetails,
     modifier: Modifier = Modifier,
 ) {
@@ -53,7 +53,7 @@ fun BillingDetailsHeader(
                     text = formatMoney(details.price),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = details.status.priceColor(),
+                    color = details.status.priceColor,
                 )
                 Text(
                     text = stringResource(
@@ -75,12 +75,13 @@ fun BillingDetailsHeader(
     }
 }
 
-@Composable
-private fun BillingStatus.priceColor(): Color = when (this) {
-    BillingStatus.PASSED -> PaymentsColors.Green
-    BillingStatus.REJECTED -> PaymentsColors.Red
-    BillingStatus.UNKNOWN -> MaterialTheme.colorScheme.onSurface
-}
+/** Green if Passed, red if Rejected; otherwise the text's default color. */
+private val BillingStatus.priceColor: Color
+    get() = when (this) {
+        BillingStatus.PASSED -> PaymentsColors.Green
+        BillingStatus.REJECTED -> PaymentsColors.Red
+        BillingStatus.UNKNOWN -> Color.Unspecified
+    }
 
 @PreviewThemes
 @Composable

@@ -16,10 +16,14 @@ sealed interface BillingListUiState : UiState {
     /**
      * The list is loaded (possibly empty). Later failures (e.g. a failed pull-to-refresh) are sent as
      * [BillingListAction.ShowMessage] and the list stays on screen.
+     *
+     * Entries that were just deleted (e.g. on the details screen) stay in [items] and are listed in
+     * [pendingRemovalIds] until the screen shows them, so their removal can be animated.
      */
     data class Success(
         val items: List<BillingEntryHeader>,
         val isRefreshing: Boolean = false,
+        val pendingRemovalIds: Set<Long> = emptySet(),
     ) : BillingListUiState
 }
 
@@ -28,6 +32,9 @@ sealed interface BillingListEvent : UiEvent {
     data object Refresh : BillingListEvent
     data class ItemClicked(val billingId: Long) : BillingListEvent
     data class UploadClicked(val billingId: Long) : BillingListEvent
+
+    /** The screen has shown the deleted entries; drop them now (the list animates their removal). */
+    data object RemovalsShown : BillingListEvent
 }
 
 sealed interface BillingListAction : UiAction {
