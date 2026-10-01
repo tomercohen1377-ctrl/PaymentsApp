@@ -1,0 +1,398 @@
+{
+  "info": {
+    "name": "Payments App - billing API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Checks the test server (server/, npm run dev) against what the app expects. Run in order. The delete requests change server/list.json and server/details.json; restore them with `git checkout server/list.json server/details.json`."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8030"
+    },
+    {
+      "key": "billingId",
+      "value": ""
+    },
+    {
+      "key": "countBeforeDelete",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Headers",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 with JSON\", () => {",
+              "    pm.response.to.have.status(200);",
+              "    pm.response.to.be.json;",
+              "});",
+              "const headers = pm.response.json().headers;",
+              "pm.test(\"headers is a non-empty array\", () => pm.expect(headers).to.be.an(\"array\").that.is.not.empty);",
+              "pm.test(\"every header has the fields the app reads, with the right types\", () => {",
+              "    headers.forEach(h => {",
+              "        pm.expect(h).to.include.all.keys(\"id\", \"price\", \"created\", \"entryNumber\", \"totalEntryCount\", \"source\", \"currencyCode\", \"cardType\");",
+              "        pm.expect(h.id).to.be.a(\"number\");",
+              "        pm.expect(h.price).to.be.a(\"number\");",
+              "        pm.expect(h.created).to.be.a(\"number\").and.to.be.below(1e11); // epoch SECONDS",
+              "        pm.expect(h.entryNumber).to.be.at.most(h.totalEntryCount);",
+              "        pm.expect([\"Terminal\", \"Pos\", \"Manual\"]).to.include(h.source);",
+              "        pm.expect([\"USD\", \"ILS\"]).to.include(h.currencyCode);",
+              "    });",
+              "});",
+              "pm.test(\"PDF vs server: no `val` field, `totalEntryCount` instead\", () => {",
+              "    pm.expect(headers[0]).to.not.have.property(\"val\");",
+              "    pm.expect(headers[0]).to.have.property(\"totalEntryCount\");",
+              "});",
+              "pm.collectionVariables.set(\"billingId\", headers[0].id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/payment/billing/entry/headers",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payment",
+            "billing",
+            "entry",
+            "headers"
+          ]
+        },
+        "description": "BillingListRequest {} -> BillingHeaderListResponse"
+      }
+    },
+    {
+      "name": "2. Details",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 with JSON\", () => {",
+              "    pm.response.to.have.status(200);",
+              "    pm.response.to.be.json;",
+              "});",
+              "const details = pm.response.json().details;",
+              "pm.test(\"details match the PDF contract\", () => {",
+              "    pm.expect(details).to.have.all.keys(\"id\", \"price\", \"created\", \"entryNumber\", \"totalEntryCount\", \"currencyCode\", \"amountPaid\", \"status\", \"cardNumber\", \"cardType\", \"issuer\", \"source\", \"terminalName\", \"approvalNumber\", \"voucherNumber\");",
+              "    pm.expect(details.id).to.eql(Number(pm.collectionVariables.get(\"billingId\")));",
+              "    pm.expect([\"Passed\", \"Rejected\"]).to.include(details.status);",
+              "    pm.expect(details.amountPaid).to.be.at.most(details.price);",
+              "});",
+              "pm.test(\"customer name and payment type are not sent\", () => {",
+              "    pm.expect(details).to.not.have.property(\"customerName\");",
+              "    pm.expect(details).to.not.have.property(\"paymentType\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"billingId\": {{billingId}}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/payment/billing/entry/details",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payment",
+            "billing",
+            "entry",
+            "details"
+          ]
+        },
+        "description": "BillingEntryRequest -> BillingEntryDetailsResponse"
+      }
+    },
+    {
+      "name": "3. Details of an unknown id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 with JSON\", () => {",
+              "    pm.response.to.have.status(200);",
+              "    pm.response.to.be.json;",
+              "});",
+              "pm.test(\"unknown id -> details: null (HTTP 200, not 404)\", () => pm.expect(pm.response.json().details).to.be.null);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"billingId\": 999}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/payment/billing/entry/details",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payment",
+            "billing",
+            "entry",
+            "details"
+          ]
+        },
+        "description": "Unknown ids return details: null"
+      }
+    },
+    {
+      "name": "4. Count before delete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 with JSON\", () => {",
+              "    pm.response.to.have.status(200);",
+              "    pm.response.to.be.json;",
+              "});",
+              "pm.collectionVariables.set(\"countBeforeDelete\", pm.response.json().headers.length);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/payment/billing/entry/headers",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payment",
+            "billing",
+            "entry",
+            "headers"
+          ]
+        },
+        "description": "Remembers the list size"
+      }
+    },
+    {
+      "name": "5. Delete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 with JSON\", () => {",
+              "    pm.response.to.have.status(200);",
+              "    pm.response.to.be.json;",
+              "});",
+              "pm.test(\"status 0 = success\", () => pm.expect(pm.response.json().status).to.eql(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"billingId\": {{billingId}}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/payment/billing/entry/delete",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payment",
+            "billing",
+            "entry",
+            "delete"
+          ]
+        },
+        "description": "BillingEntryRequest -> DeleteBillingEntryResponse"
+      }
+    },
+    {
+      "name": "6. Delete the same id again",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 with JSON\", () => {",
+              "    pm.response.to.have.status(200);",
+              "    pm.response.to.be.json;",
+              "});",
+              "pm.test(\"deleting the same id again -> status -1\", () => pm.expect(pm.response.json().status).to.eql(-1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"billingId\": {{billingId}}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/payment/billing/entry/delete",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payment",
+            "billing",
+            "entry",
+            "delete"
+          ]
+        },
+        "description": "A missing id returns status -1"
+      }
+    },
+    {
+      "name": "7. Headers after delete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200 with JSON\", () => {",
+              "    pm.response.to.have.status(200);",
+              "    pm.response.to.be.json;",
+              "});",
+              "pm.test(\"the deleted entry is gone, and only that one (the delete bug removed everything after it)\", () => {",
+              "    const headers = pm.response.json().headers;",
+              "    const id = Number(pm.collectionVariables.get(\"billingId\"));",
+              "    pm.expect(headers.map(h => h.id)).to.not.include(id);",
+              "    pm.expect(headers.length).to.eql(Number(pm.collectionVariables.get(\"countBeforeDelete\")) - 1);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/payment/billing/entry/headers",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payment",
+            "billing",
+            "entry",
+            "headers"
+          ]
+        },
+        "description": "Exactly one entry is gone (verifies the server fix)"
+      }
+    }
+  ]
+}

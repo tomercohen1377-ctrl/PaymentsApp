@@ -4,13 +4,33 @@ An Android app for the **PayPlus Android Developer Test**: a list of billing ent
 server, a details screen for each entry, and delete. Kotlin, Jetpack Compose, MVI, Clean Architecture
 across Gradle modules.
 
+**Demo videos:** [phone, Samsung Galaxy S24+](docs/demo/payments-app-demo-phone.mp4) (54 s) and
+[tablet emulator](docs/demo/payments-app-demo.mp4) (48 s). Each shows the list loading from the
+server, the MasterCard upload button, a Passed (green) and a Rejected (red) entry, delete with
+confirmation and the list's removal animation, pull-to-refresh, and the Hebrew (RTL) layout.
+
+Screenshots from the phone:
+
+| List | Details (Passed) | Details (Rejected) | Delete |
+|---|---|---|---|
+| ![List](docs/screenshots/phone/list-en.png) | ![Passed](docs/screenshots/phone/details-passed-en.png) | ![Rejected](docs/screenshots/phone/details-rejected-en.png) | ![Delete](docs/screenshots/phone/delete-confirm-en.png) |
+
+| List in Hebrew (as in the mockups) | Details in Hebrew | Server unreachable |
+|---|---|---|
+| ![List in Hebrew](docs/screenshots/phone/list-he.png) | ![Details in Hebrew](docs/screenshots/phone/details-rejected-he.png) | ![Error](docs/screenshots/phone/error-en.png) |
+
+<details>
+<summary>Tablet screenshots (emulator)</summary>
+
 | List | Details (Passed) | Delete |
 |---|---|---|
 | ![List](docs/screenshots/list-en.png) | ![Details](docs/screenshots/details-passed-en.png) | ![Delete confirmation](docs/screenshots/delete-confirm-en.png) |
 
-| List in Hebrew (RTL, as in the mockups) | Details in Hebrew (Rejected) | Server unreachable |
+| List in Hebrew | Details in Hebrew (Rejected) | Server unreachable |
 |---|---|---|
 | ![List in Hebrew](docs/screenshots/list-he.png) | ![Details in Hebrew](docs/screenshots/details-rejected-he.png) | ![Error](docs/screenshots/error-en.png) |
+
+</details>
 
 ## Running it
 
@@ -122,12 +142,42 @@ Full line-by-line tables: [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PL
   layout. Dates and card numbers are bidi-isolated, so they keep their order in RTL.
 - **Pull-to-refresh** on the list (not required).
 
+## Problems encountered
+
+| Problem | What I did |
+|---|---|
+| **Delete removed far more than one entry.** `splice(index)` in `server/controller.js` has no delete count, so it removed every entry from that index to the end (deleting one id left 35 of 486). | Fixed to `splice(index, 1)`; the delete also accepts the id as a number or numeric string. The Postman run below fails on the original server and passes on the fixed one. |
+| **The PDF's header contract doesn't match the server.** The PDF lists `val: Int`; the server never sends it and sends `totalEntryCount` instead. | The DTOs follow the server (checked field by field against every response). `totalEntryCount` drives the "3/6" billing number. |
+| **Customer name and payment type are required on the details screen but aren't in the API** (not in the PDF contract, the server code or its data; only in the mockup). | Shown as `—`. The fields are optional in the DTO and model, so they appear as soon as the server sends them. |
+| **Remaining price isn't in the API.** | Computed once in the data mapper as `price − amountPaid` (exact `BigDecimal`); money is never modified anywhere else. |
+| **`created` is epoch seconds**, and the card type `Meastro` is misspelled (in the PDF too). | Parsed as seconds; `Meastro` and `Maestro` both map to Maestro, and unknown values never crash parsing. |
+| **Asset names don't match their meaning, and two spec colors look mislabeled.** `ic_pos` is a phone and `ic_card` a card; "light gray" `#4F5860` is the darker one; Manual is `#4F5860` in the PDF but mustard in the mockup. | Matched the mockup's colors (Terminal = phone, Pos = card), used the PDF's colors, named the grays by what they are (comments explain). |
+| **The emulator couldn't reach the server**: the macOS firewall (stealth mode) drops incoming connections to `node`. A physical device can't use the emulator alias `10.0.2.2` at all. | `adb reverse tcp:8030 tcp:8030` plus a configurable base URL (`-Ppayments.baseUrl=http://localhost:8030/` or `local.properties`); see [Running it](#running-it). |
+| **Deletes are written to the server's JSON files**, so testing deletes changes the data for everyone using that copy. | Documented `git checkout server/list.json server/details.json`; destructive tests ran against a separate copy of the server. |
+| **On an English (UK) device Java writes `US$28.80`.** | The formatter always uses the plain symbol (`$`, `₪`) while the locale still decides placement and separators. |
+| **In Hebrew, dates and masked card numbers reordered** (`10:50 16-06-2020`, `4873****`). | Wrapped in Unicode bidi isolation (`isolateLtr()`), so they read as in the spec. |
+
 ## Tests and checks
 
 ```bash
-./gradlew spotlessCheck lintDebug test        # format, lint, 82 unit tests
+./gradlew spotlessCheck lintDebug test        # format, lint, 85 unit tests
 ./gradlew connectedDebugAndroidTest           # 8 Compose UI tests (emulator)
 ```
+
+**API verification with Postman.** [`docs/api/PaymentsApp.postman_collection.json`](docs/api/PaymentsApp.postman_collection.json)
+runs the three endpoints in order with assertions: field names and types the app relies on, epoch
+seconds, `details: null` for an unknown id, delete status `0` then `-1`, and that a delete removes
+exactly one entry. Import it into Postman (set `baseUrl`, default `http://localhost:8030`) or run it
+from the command line; the delete requests change the server's data files.
+
+```bash
+npx newman run docs/api/PaymentsApp.postman_collection.json
+```
+
+| Server | Result |
+|---|---|
+| Original `android-test-server.zip` | 15 / 16 assertions; fails "the deleted entry is gone, and only that one" (the delete bug) |
+| Fixed (`server/` in this repo) | 16 / 16 assertions pass |
 
 - Network tests replay response bodies **recorded from the running server** and parse every entry
   of its data files.
