@@ -5,4 +5,16 @@
     <string name="error_server">The server is having trouble right now. Please try again later.</string>
     <string name="error_invalid_response">We received an unexpected response. Please try again.</string>
     <string name="error_unknown">Something went wrong. Please try again.</string>
+
+    <!-- Common actions -->
+    <string name="action_retry">Retry</string>
+    <string name="action_back">Back</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+
+    <!-- Billing source names (also the source badge's content description) -->
+    <string name="source_terminal">Terminal</string>
+    <string name="source_pos">POS</string>
+    <string name="source_manual">Manual</string>
+    <string name="source_unknown">Unknown source</string>
 </resources>
