@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:model"))
     implementation(project(":core:network"))
+    implementation(libs.kotlinx.coroutines.core)
 
     testImplementation(project(":core:testing"))
 }

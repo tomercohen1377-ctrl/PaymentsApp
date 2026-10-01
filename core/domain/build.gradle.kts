@@ -6,5 +6,6 @@ dependencies {
     api(project(":core:model"))
     implementation(project(":core:common"))
     implementation(libs.javax.inject)
-    implementation(libs.kotlinx.coroutines.core)
+    // api: Flow is part of the repository interface.
+    api(libs.kotlinx.coroutines.core)
 }
