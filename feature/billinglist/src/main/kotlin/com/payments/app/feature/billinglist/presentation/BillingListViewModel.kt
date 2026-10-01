@@ -46,15 +46,19 @@ class BillingListViewModel @Inject constructor(
 
     override fun handleEvent(event: BillingListEvent) {
         when (event) {
-            BillingListEvent.Refresh, BillingListEvent.Retry -> refresh()
-
-            is BillingListEvent.ItemClicked -> sendAction(BillingListAction.NavigateToDetails(event.billingId))
-
-            // The task asks for the button but not for what it does.
-            is BillingListEvent.UploadClicked -> sendAction(
-                BillingListAction.ShowMessage(R.string.upload_not_available),
-            )
+            BillingListEvent.Refresh -> refresh()
+            is BillingListEvent.ItemClicked -> navigateToDetails(event.billingId)
+            is BillingListEvent.UploadClicked -> showUploadNotAvailable()
         }
+    }
+
+    private fun navigateToDetails(billingId: Long) {
+        sendAction(BillingListAction.NavigateToDetails(billingId))
+    }
+
+    // The task asks for the button but not for what it does.
+    private fun showUploadNotAvailable() {
+        sendAction(BillingListAction.ShowMessage(R.string.upload_not_available))
     }
 
     /** The single place that decides which [BillingListUiState] the screen is in. Loaded content wins. */
@@ -79,15 +83,20 @@ class BillingListViewModel @Inject constructor(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                val message = e.toMessageRes()
-                if (currentState is BillingListUiState.Success) {
-                    sendAction(BillingListAction.ShowMessage(message))
-                } else {
-                    blockingError.value = message
-                }
+                onRefreshFailed(e)
             } finally {
                 isRefreshing.value = false
             }
+        }
+    }
+
+    /** With a list on screen, keep it and show a message; with nothing loaded, show the error screen. */
+    private fun onRefreshFailed(error: Exception) {
+        val message = error.toMessageRes()
+        if (currentState is BillingListUiState.Success) {
+            sendAction(BillingListAction.ShowMessage(message))
+        } else {
+            blockingError.value = message
         }
     }
 }

@@ -24,8 +24,8 @@ sealed interface BillingListUiState : UiState {
 }
 
 sealed interface BillingListEvent : UiEvent {
+    /** Reload the list: pull-to-refresh, or Retry after a failed first load. */
     data object Refresh : BillingListEvent
-    data object Retry : BillingListEvent
     data class ItemClicked(val billingId: Long) : BillingListEvent
     data class UploadClicked(val billingId: Long) : BillingListEvent
 }

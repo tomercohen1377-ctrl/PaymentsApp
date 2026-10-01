@@ -25,6 +25,7 @@ import com.payments.app.core.designsystem.component.MessageState
 import com.payments.app.core.designsystem.preview.PaymentsPreview
 import com.payments.app.core.designsystem.preview.PreviewThemes
 import com.payments.app.core.model.BillingEntryHeader
+import com.payments.app.core.ui.message.showMessage
 import com.payments.app.core.ui.mvi.CollectAction
 import com.payments.app.core.ui.preview.PreviewBillingData
 import com.payments.app.feature.billinglist.R
@@ -45,7 +46,7 @@ fun BillingListRoute(
     CollectAction(viewModel.action) { action ->
         when (action) {
             is BillingListAction.NavigateToDetails -> onNavigateToDetails(action.billingId)
-            is BillingListAction.ShowMessage -> snackbarHostState.showSnackbar(resources.getString(action.message))
+            is BillingListAction.ShowMessage -> snackbarHostState.showMessage(resources, action.message)
         }
     }
 
@@ -76,20 +77,23 @@ fun BillingListScreen(
         ) {
             when (state) {
                 BillingListUiState.Loading -> LoadingState()
-
-                is BillingListUiState.Error -> MessageState(
-                    message = stringResource(state.message),
-                    actionLabel = stringResource(CoreUiR.string.action_retry),
-                    onAction = { onEvent(BillingListEvent.Retry) },
-                )
-
-                is BillingListUiState.Success -> BillingList(
-                    items = state.items,
-                    onEvent = onEvent,
-                )
+                is BillingListUiState.Error -> BillingListError(state, onEvent)
+                is BillingListUiState.Success -> BillingList(state.items, onEvent)
             }
         }
     }
+}
+
+@Composable
+private fun BillingListError(
+    state: BillingListUiState.Error,
+    onEvent: (BillingListEvent) -> Unit,
+) {
+    MessageState(
+        message = stringResource(state.message),
+        actionLabel = stringResource(CoreUiR.string.action_retry),
+        onAction = { onEvent(BillingListEvent.Refresh) },
+    )
 }
 
 @Composable

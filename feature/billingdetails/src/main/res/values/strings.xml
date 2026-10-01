@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_not_found">This billing entry no longer exists.</string>
+    <string name="details_value_missing" translatable="false">—</string>
+
+    <!-- Field labels, in the order of the details mockup -->
+    <string name="details_customer_name">Customer name:</string>
+    <string name="details_status">Status:</string>
+    <string name="details_payment_type">Payment type:</string>
+    <string name="details_card_number">Card number:</string>
+    <string name="details_card_type">Card type:</string>
+    <string name="details_issuer">Issuer:</string>
+    <string name="details_source">Payment source:</string>
+    <string name="details_terminal_name">Terminal name:</string>
+    <string name="details_amount_paid">Total paid:</string>
+    <string name="details_remaining">Remaining:</string>
+    <string name="details_approval_number">Approval number:</string>
+    <string name="details_voucher_number">Voucher number:</string>
+    <string name="details_billing_number_and_date" translatable="false">%1$s · %2$s</string>
+
+    <string name="status_passed">Passed</string>
+    <string name="status_rejected">Rejected</string>
+    <string name="status_unknown">Unknown</string>
+
+    <string name="delete_confirm_title">Delete this billing entry?</string>
+    <string name="delete_confirm_text">It will be removed from the server. This can\'t be undone.</string>
+
+    <!-- Brand names: not translated -->
+    <string name="card_visa" translatable="false">Visa</string>
+    <string name="card_mastercard" translatable="false">MasterCard</string>
+    <string name="card_diners" translatable="false">Diners</string>
+    <string name="card_amex" translatable="false">Amex</string>
+    <string name="card_isracard" translatable="false">Isracard</string>
+    <string name="card_discover" translatable="false">Discover</string>
+    <string name="card_maestro" translatable="false">Maestro</string>
+    <string name="card_max" translatable="false">Max</string>
+    <string name="issuer_visacal" translatable="false">Visa Cal</string>
+    <string name="issuer_jcb" translatable="false">JCB</string>
+</resources>

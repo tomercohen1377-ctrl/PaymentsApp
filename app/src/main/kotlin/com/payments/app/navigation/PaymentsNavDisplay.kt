@@ -1,6 +1,5 @@
 package com.payments.app.navigation
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -8,6 +7,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.payments.app.feature.billingdetails.navigation.BillingDetailsKey
+import com.payments.app.feature.billingdetails.navigation.billingDetailsEntry
 import com.payments.app.feature.billinglist.navigation.BillingListKey
 import com.payments.app.feature.billinglist.navigation.billingListEntry
 
@@ -19,20 +20,21 @@ import com.payments.app.feature.billinglist.navigation.billingListEntry
 @Composable
 fun PaymentsNavDisplay(modifier: Modifier = Modifier) {
     val backStack = rememberNavBackStack(BillingListKey)
+    val navigateBack: () -> Unit = { backStack.removeLastOrNull() }
 
     NavDisplay(
         backStack = backStack,
         modifier = modifier,
-        onBack = { backStack.removeLastOrNull() },
+        onBack = navigateBack,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
             billingListEntry(
-                // The details destination is added in stage 8.
-                onNavigateToDetails = { billingId -> Log.d("PaymentsNav", "Details for $billingId") },
+                onNavigateToDetails = { billingId -> backStack.add(BillingDetailsKey(billingId)) },
             )
+            billingDetailsEntry(onBack = navigateBack)
         },
     )
 }

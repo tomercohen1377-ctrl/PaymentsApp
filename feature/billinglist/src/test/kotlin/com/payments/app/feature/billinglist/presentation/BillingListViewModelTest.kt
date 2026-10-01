@@ -69,7 +69,7 @@ class BillingListViewModelTest {
     }
 
     @Test
-    fun `retry goes back to Loading and then shows the list`() = runTest {
+    fun `refreshing after a failed first load goes back to Loading, then shows the list`() = runTest {
         repository.refreshError = AppException.Network()
         val vm = viewModel()
         repository.refreshError = null
@@ -77,7 +77,7 @@ class BillingListViewModelTest {
         val gate = CompletableDeferred<Unit>()
         repository.refreshGate = gate
 
-        vm.onEvent(BillingListEvent.Retry)
+        vm.onEvent(BillingListEvent.Refresh)
         assertThat(vm.state.value).isEqualTo(BillingListUiState.Loading)
 
         gate.complete(Unit)

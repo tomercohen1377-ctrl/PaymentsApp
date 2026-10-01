@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_not_found">רשומת החיוב הזו כבר לא קיימת.</string>
+
+    <string name="details_customer_name">שם לקוח:</string>
+    <string name="details_status">סטטוס:</string>
+    <string name="details_payment_type">סוג תשלום:</string>
+    <string name="details_card_number">מס. כרטיס:</string>
+    <string name="details_card_type">סוג כרטיס:</string>
+    <string name="details_issuer">חברת סליקה:</string>
+    <string name="details_source">מקור:</string>
+    <string name="details_terminal_name">שם מסוף:</string>
+    <string name="details_amount_paid">סכום שחויב:</string>
+    <string name="details_remaining">סכום נותר לחיוב:</string>
+    <string name="details_approval_number">מס. אישור:</string>
+    <string name="details_voucher_number">מס. רשומה:</string>
+
+    <string name="status_passed">עברה</string>
+    <string name="status_rejected">נדחה</string>
+    <string name="status_unknown">לא ידוע</string>
+
+    <string name="delete_confirm_title">למחוק את רשומת החיוב?</string>
+    <string name="delete_confirm_text">הרשומה תימחק מהשרת. לא ניתן לבטל פעולה זו.</string>
+</resources>
